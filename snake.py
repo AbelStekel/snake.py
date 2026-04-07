@@ -62,29 +62,28 @@ def game(chosen_font, difficulty, color, lightmode, highscore, coop, audio):
     direction = 'RIGHT'
     change_to = direction
 
+    #create second snake for multiplayer games
     if coop == True:
         snake2_position = [window_x - 50, 50]
         snake2_body = [[window_x - 50, 50], [window_x - 40, 50], [window_x - 30, 50], [window_x - 20, 50]]
         direction2 = 'LEFT2'
         change_to_2 = direction2
-    
-    #spawn initial fruit and rocks
-    if coop == False:
-        fruit_position = gen_fruit(snake_body, rocks_list)
-        rock_position = gen_rocks(rocks_list, snake_body, fruit_position)
-        #add rock position to list
-        rocks_list.append(rock_position)
-    else:
+        #co op fruit and rock spawning
         fruit_position = gen_fruit_coop(snake_body, snake2_body, rocks_list)
         rock_position = gen_rocks_coop(rocks_list, snake_body, snake2_body, fruit_position)
         #add rock position to list
         rocks_list.append(rock_position)
-    fruit_active = True
-
-    #function that handles score procurement
-    #N.B.: these 4 steps (font -> surface -> rect -> blit) happen constantly
-    #throughout the program. this is the only time they have comments
-    if coop == False:
+    
+    #spawn initial fruit and rocks
+    else:
+        fruit_position = gen_fruit(snake_body, rocks_list)
+        rock_position = gen_rocks(rocks_list, snake_body, fruit_position)
+        #add rock position to list
+        rocks_list.append(rock_position)
+        
+        #handle drawing score stuff for not-coop mode
+        #N.B.: these 4 steps (font -> surface -> rect -> blit) happen constantly
+        #throughout the program. this is the only time they have comments
         def show_score(color, font, size):
             #prep font
             score_font = pygame.font.SysFont(font, size)
@@ -103,6 +102,7 @@ def game(chosen_font, difficulty, color, lightmode, highscore, coop, audio):
             #handles offset for highscore
             highscore_rect.midtop = (window_x - 100, 0)
             game_window.blit(highscore_surface, highscore_rect)
+    fruit_active = True
 
     #the game has to end somehow
     def game_over(highscore_improve, winner):
@@ -206,11 +206,11 @@ def game(chosen_font, difficulty, color, lightmode, highscore, coop, audio):
             start_menu(chosen_font, difficulty, color, lightmode, highscore, coop, audio)
 
     while True:
-        if (pygame.mixer.music.get_busy == False and audio == True):
+        if pygame.mixer.music.get_busy == False and audio == True:
             pygame.mixer.music.load("chickendancesong.mp3")
             pygame.mixer.music.play(-1)
         
-        if (audio == False):
+        if audio == False:
             pygame.mixer.music.pause()
 
         fruit_eaten = pygame.mixer.Sound("heavyeating.mp3")
@@ -571,9 +571,9 @@ def start_menu(chosen_font, difficulty, color, lightmode, highscore, coop, audio
         sound_button = pygame.Rect(1000, 640, 1064, 704)
         audiologo_on = pygame.image.load("volumeon.png")
         audiologo_off = pygame.image.load("volumeoff.png")
-        if (audio == False):
+        if audio == False:
             game_window.blit(audiologo_off, (1000, 640))
-        if (audio == True):
+        if audio == True:
             game_window.blit(audiologo_on, (1000, 640))
 
         #start drawing buttons
@@ -673,9 +673,9 @@ def options_menu(chosen_font, difficulty, color, lightmode, highscore, coop, aud
 
         #draw button for volume
         sound_button = pygame.Rect(1000, 640, 1064, 704)
-        if (audio == False):
+        if audio == False:
             game_window.blit(audiologo_off, (1000, 640))
-        if (audio == True):
+        if audio == True:
             game_window.blit(audiologo_on, (1000, 640))
 
         #buttons first draw an outline which is statically colored.
@@ -781,7 +781,7 @@ def options_menu(chosen_font, difficulty, color, lightmode, highscore, coop, aud
                     color = increment_color(color, chosen_font, difficulty, lightmode, highscore, coop, audio)
                 if sound_button.collidepoint(mouse):
                     pygame.mixer.Sound.play(menu_blip)
-                    if (audio == False):
+                    if audio == False:
                         audio = True
                         pygame.mixer.music.unpause()
                     else:
