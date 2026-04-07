@@ -28,8 +28,6 @@ light = pygame.Color(170, 170, 170)
 dark = pygame.Color(100, 100, 100)
 menucolor = pygame.Color(60, 25, 60)
 
-rainbow_list = [red, orange, yellow, green, blue, menucolor, pink]
-
 #create list of rocks for later use and initiate it with a dummy value 
 #i dont think this really matters but it makes my vsc plugins happy
 #purposefully put the coordinate out of bounds to prevent issues
@@ -637,7 +635,7 @@ def start_menu(chosen_font, difficulty, color, lightmode, highscore, coop, audio
                     pygame.mixer.Sound.play(menu_blip)
                     if audio == False:
                         audio = True
-                        pygame.mixer.music.play()
+                        pygame.mixer.music.unpause()
                     else:
                         audio = False
                         pygame.mixer.music.pause()
@@ -866,6 +864,7 @@ def increment_color(color, font, difficulty, lightmode, highscore, coop, audio):
 
 #this function loops through our rainbow to find the next
 def iterate_rainbow (color):
+    rainbow_list = [red, orange, yellow, green, blue, menucolor, pink]
     i = 0
     #loop through rainbow
     for entry in rainbow_list:
