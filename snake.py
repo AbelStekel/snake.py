@@ -429,7 +429,8 @@ def game(chosen_font, difficulty, color, lightmode, highscore, coop, audio):
             if (snake_position[0] < 0 or snake_position[0] > window_x - 10) and (snake2_position[1] < 0 or snake2_position[1] > window_y - 10):
                 game_over(highscore_improve, "draw")
             #case: snake1 y-coords, snake2 x-coords
-            if (snake_position[1] < 0 or snake_position[1] > window_y - 10) and (snake2_position[0] < 0 or snake2_position[0] > window_x - 10):
+            if (snake_position[1] < 0 
+                or snake_position[1] > window_y - 10) and (snake2_position[0] < 0 or snake2_position[0] > window_x - 10):
                 game_over(highscore_improve, "draw")
 
             #check for rock collision
