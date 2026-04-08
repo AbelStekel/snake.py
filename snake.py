@@ -51,6 +51,7 @@ def game(chosen_font, difficulty, color, lightmode, highscore, coop, audio):
     highscore_improve = False
     rock_spawned = False
     score = 0
+    #save the start color so it's not lost when rainbow
     initialcolor = color
 
     #this is you. you are a snake. positions derived from start
@@ -87,7 +88,7 @@ def game(chosen_font, difficulty, color, lightmode, highscore, coop, audio):
         def show_score(color, font, size):
             #prep font
             score_font = pygame.font.SysFont(font, size)
-            #render surace object
+            #render surface object
             score_surface = score_font.render('Total points: ' + str(score), True, color)
             #create rectangle
             score_rect = score_surface.get_rect()
@@ -106,10 +107,26 @@ def game(chosen_font, difficulty, color, lightmode, highscore, coop, audio):
 
     #the game has to end somehow
     def game_over(highscore_improve, winner):
+        #in single player we can play different game over audio
+        #depending on what happened
+        #i dont have the files for this yet.
+        # if coop == False:
+        #     pygame.mixer.music.stop()
+        #     if highscore_improve == True:
+        #         pygame.mixer.music.load("victorytheme.mp3")
+        #         pygame.mixer.music.play(1)
+        #     elif highscore_improve == False and score == highscore:
+        #         pygame.mixer.music.load("soclose.mp3")
+        #         pygame.mixer.music.play(1)
+        #     elif highscore_improve == False and score < highscore:
+        #         pygame.mixer.music.load("mw2failed.mp3")
+        #         pygame.mixer.music.play(1)            
 
         #generate font for ending text
         big_text = pygame.font.SysFont(chosen_font, 50)
         small_text = pygame.font.SysFont(chosen_font, 20)
+
+        #revert snake color back to start color (in case of rainbow)
         color = initialcolor
         
         if coop == False:
@@ -206,13 +223,7 @@ def game(chosen_font, difficulty, color, lightmode, highscore, coop, audio):
             start_menu(chosen_font, difficulty, color, lightmode, highscore, coop, audio)
 
     while True:
-        if pygame.mixer.music.get_busy == False and audio == True:
-            pygame.mixer.music.load("chickendancesong.mp3")
-            pygame.mixer.music.play(-1)
-        
-        if audio == False:
-            pygame.mixer.music.pause()
-
+        #prep eating sound
         fruit_eaten = pygame.mixer.Sound("heavyeating.mp3")
         #pygame style input handling
         if coop == False:
@@ -308,7 +319,11 @@ def game(chosen_font, difficulty, color, lightmode, highscore, coop, audio):
                 score += 1
                 pygame.mixer.Sound.play(fruit_eaten)
                 if score > highscore:
-                    highscore_improve = True
+                    #we only wanna start starmanning once, hence this check
+                    if highscore_improve == False:
+                        highscore_improve = True
+                    #     pygame.mixer.music.load("mariostarmantheme.mp3")
+                    #     pygame.mixer.music.play(-1)
                     highscore = score
                 fruit_active = False
                 rock_spawned = False
@@ -333,6 +348,7 @@ def game(chosen_font, difficulty, color, lightmode, highscore, coop, audio):
             if snake_position[0] == fruit_position[0] and snake_position[1] == fruit_position[1]:
                 #in coop score is only used to spawn more rocks
                 score += 1
+                pygame.mixer.Sound.play(fruit_eaten)
                 fruit_active = False
                 rock_spawned = False
             else:
@@ -352,12 +368,12 @@ def game(chosen_font, difficulty, color, lightmode, highscore, coop, audio):
         if coop == False:
             if fruit_active == False:
                 fruit_position = gen_fruit(snake_body, rocks_list)
-                #comment out the next line if u need to debug the fruit generation algorithm
+                #comment out the next line if u need to debug the fruit spawning algorithm
                 fruit_active = True
         else:
             if fruit_active == False:
                 fruit_position = gen_fruit_coop(snake_body, snake2_body, rocks_list)
-                #comment out the next line if u need to debug the fruit generation algorithm
+                #comment out the next line if u need to debug the fruit spawning algorithm
                 fruit_active = True
 
         #start drawing graphics
@@ -365,14 +381,16 @@ def game(chosen_font, difficulty, color, lightmode, highscore, coop, audio):
         if lightmode == False:
             game_window.fill(black)
         else:
-            game_window.fill(white)    
-        
+            game_window.fill(white)
+
+        #if the player is doing well, show cool visuals
+        if highscore_improve == True:
+            color = iterate_rainbow(color)
+
         #then loop through snake's body and draw each bit
         for pos in snake_body:
-            #if the player is doing well, show cool visuals
-            if highscore_improve == True:
-                color = iterate_rainbow(color)
             pygame.draw.rect(game_window, color, pygame.Rect(pos[0], pos[1], 10, 10))
+
         if coop == True:
             for pos in snake2_body:
                 pygame.draw.rect(game_window, brown, pygame.Rect(pos[0], pos[1], 10, 10))
@@ -399,6 +417,7 @@ def game(chosen_font, difficulty, color, lightmode, highscore, coop, audio):
             snake_head = pygame.image.load("snakehead_down.png")
             game_window.blit(snake_head, (snake_position[0] - 5, snake_position[1] + 10))
 
+        #in coop also draw player2
         if coop == True:
             if direction2 == "UP2":
                 snake2_head = pygame.image.load("snakehead_up.png")
@@ -429,13 +448,12 @@ def game(chosen_font, difficulty, color, lightmode, highscore, coop, audio):
             if (snake_position[0] < 0 or snake_position[0] > window_x - 10) and (snake2_position[1] < 0 or snake2_position[1] > window_y - 10):
                 game_over(highscore_improve, "draw")
             #case: snake1 y-coords, snake2 x-coords
-            if (snake_position[1] < 0 
-                or snake_position[1] > window_y - 10) and (snake2_position[0] < 0 or snake2_position[0] > window_x - 10):
+            if (snake_position[1] < 0 or snake_position[1] > window_y - 10) and (snake2_position[0] < 0 or snake2_position[0] > window_x - 10):
                 game_over(highscore_improve, "draw")
 
             #check for rock collision
             for rock in rocks_list:
-                #case: snake1 eats rock while snake1 eats wall on y-coord
+                #case: snake1 eats rock while snake1 eats wall on x-coord
                 if (snake_position[0] == rock[0] and snake_position[1] == rock[1]) and (snake2_position[0] < 0 or snake2_position[0] > window_x - 10):
                     game_over(highscore_improve, "draw")
                 #case: snake1 eats rock while snake1 eats wall on y-coord
@@ -541,10 +559,13 @@ def game(chosen_font, difficulty, color, lightmode, highscore, coop, audio):
 #i am aware this sucks
 def start_menu(chosen_font, difficulty, color, lightmode, highscore, coop, audio):
     while True:
-        #decide color of window
-        game_window.fill(menucolor)
+        #start music back up if a game-over screen ended it
+        if pygame.mixer.music.get_busy == False and audio == True:
+            pygame.mixer.music.load("chickendancesong.mp3")
+            pygame.mixer.music.play(-1)
 
-        #track mouse movements
+        #decide color of window and start tracking inputs
+        game_window.fill(menucolor)
         mouse = pygame.mouse.get_pos()
 
         #prep menu sound
@@ -607,11 +628,7 @@ def start_menu(chosen_font, difficulty, color, lightmode, highscore, coop, audio
             game_window.blit(play_text, (window_x / 3 + 20, 3 * window_y / 9))
             game_window.blit(options_text, (window_x / 3 + 20, 5 * window_y / 9))
             game_window.blit(quit_text, (window_x / 3 + 20, 7 * window_y / 9))
-        elif chosen_font == "Bahnschrift":
-            game_window.blit(play_text, (window_x / 3 + 20, 3 * window_y / 9 + 15))
-            game_window.blit(options_text, (window_x / 3 + 20, 5 * window_y / 9 + 15))
-            game_window.blit(quit_text, (window_x / 3 + 20, 7 * window_y / 9 + 15))
-        elif chosen_font == "Calibri":
+        elif chosen_font == "Bahnschrift" or chosen_font == "Calibri":
             game_window.blit(play_text, (window_x / 3 + 20, 3 * window_y / 9 + 15))
             game_window.blit(options_text, (window_x / 3 + 20, 5 * window_y / 9 + 15))
             game_window.blit(quit_text, (window_x / 3 + 20, 7 * window_y / 9 + 15))
@@ -650,6 +667,11 @@ def options_menu(chosen_font, difficulty, color, lightmode, highscore, coop, aud
         #create window and track mouse
         game_window.fill(menucolor)
         mouse = pygame.mouse.get_pos()
+
+        #start music back up if a game-over screen ended it
+        if pygame.mixer.music.get_busy == False and audio == True:
+            pygame.mixer.music.load("chickendancesong.mp3")
+            pygame.mixer.music.play(-1)
 
         #prep menu sound
         menu_blip = pygame.mixer.Sound("pokeconfirm.mp3")
@@ -742,14 +764,7 @@ def options_menu(chosen_font, difficulty, color, lightmode, highscore, coop, aud
             game_window.blit(coop_text, (window_x / 4 + 20, 9 * window_y / 13 - 10))
             game_window.blit(back_text, (window_x / 4 + 20, 11 * window_y / 13 - 10))
 
-        elif chosen_font == "Bahnschrift":
-            game_window.blit(difficulty_text, (window_x / 4 + 20, window_y / 13 + 5))
-            game_window.blit(font_text, (window_x / 4 + 20, 3 * window_y / 13 + 5))
-            game_window.blit(color_text, (window_x / 4 + 20, 5 * window_y / 13 + 5))
-            game_window.blit(mode_text, (window_x / 4 + 20, 7 * window_y / 13 + 5))
-            game_window.blit(coop_text, (window_x / 4 + 20, 9 * window_y / 13 + 5))
-            game_window.blit(back_text, (window_x / 4 + 20, 11 * window_y / 13 + 5))
-        elif chosen_font == "Calibri":
+        elif chosen_font == "Bahnschrift" or chosen_font == "Calibri":
             game_window.blit(difficulty_text, (window_x / 4 + 20, window_y / 13 + 5))
             game_window.blit(font_text, (window_x / 4 + 20, 3 * window_y / 13 + 5))
             game_window.blit(color_text, (window_x / 4 + 20, 5 * window_y / 13 + 5))
@@ -865,6 +880,7 @@ def increment_color(color, font, difficulty, lightmode, highscore, coop, audio):
 
 #this function loops through our rainbow to find the next
 def iterate_rainbow (color):
+    #rainbow == ROYGBVP (menucolor = purple)
     rainbow_list = [red, orange, yellow, green, blue, menucolor, pink]
     i = 0
     #loop through rainbow
@@ -999,5 +1015,5 @@ def gen_rocks_coop(rocks_list, snake_body, snake2_body, fruit_position):
 
 #this initiates the main menu to start the game out of
 #and parses standard values into the menu which can be changed in options
-#also initiates the high score at 0
-start_menu("Comic Sans MS", "Easy", green, False, 0, False, True)
+#also initiates the high score at 5SS
+start_menu("Comic Sans MS", "Easy", green, False, 5, False, True)

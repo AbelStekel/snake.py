@@ -25,3 +25,12 @@ You are a snake (green, initially). You must eat fruits to grow larger (blue) an
 You will die if you touch the walls, obstacles (grey) or yourself.
 In vs. mode, player two is the brown snake. Win by getting them snagged on yourself, or by outlasting them.
 A head on collision means the game will tie. Eat fruits to grow larger, so that it's easier to entrap the other player.
+
+Potential to do list for the future:
+- Make a tutorial or some such thing
+- Optimise the code, ie load music/images as variables as opposed to loading them every loop
+- Fix rainbow
+- Reduce redunancy in code? coop booleans and such
+- Add more audio stuff (gameover, starman, etc)
+- Add fonts as files to reduce headache for ppl who don't have Windows fonts / better portability
+- Add a cap to the amount of rocks or implement Dijkstra's alg for not getting softlocked
