@@ -46,14 +46,25 @@ pygame.mixer.music.load("chickendancesong.mp3")
 pygame.mixer.music.play(-1)
 
 def game(chosen_font, difficulty, color, lightmode, highscore, coop, audio):
-
     #initiate these so that we may access them later as local variables
     highscore_improve = False
     rock_spawned = False
     score = 0
+
     #save the start color so it's not lost when rainbow
     initialcolor = color
 
+    #prep eating sounds and images
+    fruit_eaten = pygame.mixer.Sound("heavyeating.mp3")
+    snake_headup = pygame.image.load("snakehead_up.png")
+    snake_headright = pygame.image.load("snakehead_right.png")
+    snake_headleft = pygame.image.load("snakehead_left.png")
+    snake_headdown = pygame.image.load("snakehead_down.png")
+    snake2_headup = pygame.image.load("snakehead_up.png")
+    snake2_headright = pygame.image.load("snakehead_right.png")
+    snake2_headleft = pygame.image.load("snakehead_left.png")
+    snake2_headdown = pygame.image.load("snakehead_down.png")
+    
     #this is you. you are a snake. positions derived from start
     #snake spawn is a given, to prevent player frustration/confusion ie. build expectation
     snake_position = [50, 50]
@@ -223,8 +234,6 @@ def game(chosen_font, difficulty, color, lightmode, highscore, coop, audio):
             start_menu(chosen_font, difficulty, color, lightmode, highscore, coop, audio)
 
     while True:
-        #prep eating sound
-        fruit_eaten = pygame.mixer.Sound("heavyeating.mp3")
         #pygame style input handling
         if coop == False:
             for event in pygame.event.get():
@@ -405,38 +414,29 @@ def game(chosen_font, difficulty, color, lightmode, highscore, coop, audio):
 
         #code to draw head of snake
         if direction == "UP":
-            snake_head = pygame.image.load("snakehead_up.png")
-            game_window.blit(snake_head, (snake_position[0] - 5, snake_position[1] - 20))
+            game_window.blit(snake_headup, (snake_position[0] - 5, snake_position[1] - 20))
         elif direction == "RIGHT":
-            snake_head = pygame.image.load("snakehead_right.png")
-            game_window.blit(snake_head, (snake_position[0] + 10, snake_position[1] - 5))
+            game_window.blit(snake_headright, (snake_position[0] + 10, snake_position[1] - 5))
         elif direction == "LEFT":
-            snake_head = pygame.image.load("snakehead_left.png")
-            game_window.blit(snake_head, (snake_position[0] - 20, snake_position[1] - 5))
+            game_window.blit(snake_headleft, (snake_position[0] - 20, snake_position[1] - 5))
         elif direction == "DOWN":
-            snake_head = pygame.image.load("snakehead_down.png")
-            game_window.blit(snake_head, (snake_position[0] - 5, snake_position[1] + 10))
+            game_window.blit(snake_headdown, (snake_position[0] - 5, snake_position[1] + 10))
 
         #in coop also draw player2
         if coop == True:
             if direction2 == "UP2":
-                snake2_head = pygame.image.load("snakehead_up.png")
-                game_window.blit(snake2_head, (snake2_position[0] - 5, snake2_position[1] - 20))
+                game_window.blit(snake2_headup, (snake2_position[0] - 5, snake2_position[1] - 20))
             elif direction2 == "RIGHT2":
-                snake2_head = pygame.image.load("snakehead_right.png")
-                game_window.blit(snake2_head, (snake2_position[0] + 10, snake2_position[1] - 5))
+                game_window.blit(snake2_headright, (snake2_position[0] + 10, snake2_position[1] - 5))
             elif direction2 == "LEFT2":
-                snake2_head = pygame.image.load("snakehead_left.png")
-                game_window.blit(snake2_head, (snake2_position[0] - 20, snake2_position[1] - 5))
+                game_window.blit(snake2_headleft, (snake2_position[0] - 20, snake2_position[1] - 5))
             elif direction2 == "DOWN2":
-                snake2_head = pygame.image.load("snakehead_down.png")
-                game_window.blit(snake2_head, (snake2_position[0] - 5, snake2_position[1] + 10))
+                game_window.blit(snake2_headdown, (snake2_position[0] - 5, snake2_position[1] + 10))
 
         #here we begin to look for death conditions.
         #we begin with co-op in case of draws. we handle these first
         #this is bc of the linear nature of code
         if coop == True:
-
             #check if both snakes are hitting walls at the same time
             #case: both snakes x-coords out of bounds
             if (snake_position[0] < 0 or snake_position[0] > window_x - 10) and (snake2_position[0] < 0 or snake2_position[0] > window_x - 10):
@@ -554,10 +554,17 @@ def game(chosen_font, difficulty, color, lightmode, highscore, coop, audio):
         fps.tick(snake_speed)
 
 #main menu
-#text formatting is 'hard coded' according to the font
-#this is because each font is interpreted differently
-#i am aware this sucks
 def start_menu(chosen_font, difficulty, color, lightmode, highscore, coop, audio):
+    #prep audio
+    menu_blip = pygame.mixer.Sound("pokeconfirm.mp3")           
+
+    #prep images
+    logo1 = pygame.image.load("logo1.png")
+    logo2 = pygame.image.load("logo2.png")
+    logo3 = pygame.image.load("logo3.png")
+    audiologo_on = pygame.image.load("volumeon.png")
+    audiologo_off = pygame.image.load("volumeoff.png")
+
     while True:
         #start music back up if a game-over screen ended it
         if pygame.mixer.music.get_busy == False and audio == True:
@@ -568,15 +575,9 @@ def start_menu(chosen_font, difficulty, color, lightmode, highscore, coop, audio
         game_window.fill(menucolor)
         mouse = pygame.mouse.get_pos()
 
-        #prep menu sound
-        menu_blip = pygame.mixer.Sound("pokeconfirm.mp3")           
-
-        #draw images on menu screen
-        logo1 = pygame.image.load("logo1.png")
+        #draw prepped images
         game_window.blit(logo1, (window_x / 2 - 145, 35))
-        logo2 = pygame.image.load("logo2.png")
         game_window.blit(logo2, (0, 20))
-        logo3 = pygame.image.load("logo3.png")
         game_window.blit(logo3, (700, 50))
 
         #define buttons
@@ -591,8 +592,6 @@ def start_menu(chosen_font, difficulty, color, lightmode, highscore, coop, audio
 
         #sound stuff
         sound_button = pygame.Rect(1000, 640, 1064, 704)
-        audiologo_on = pygame.image.load("volumeon.png")
-        audiologo_off = pygame.image.load("volumeoff.png")
         if audio == False:
             game_window.blit(audiologo_off, (1000, 640))
         if audio == True:
@@ -662,7 +661,14 @@ def start_menu(chosen_font, difficulty, color, lightmode, highscore, coop, audio
                     quit()
         pygame.display.update()
 
-def options_menu(chosen_font, difficulty, color, lightmode, highscore, coop, audio):
+def options_menu(chosen_font, difficulty, color, lightmode, highscore, coop, audio):   
+    #prep menu sound
+    menu_blip = pygame.mixer.Sound("pokeconfirm.mp3")
+
+    #prep image for vulume button
+    audiologo_on = pygame.image.load("volumeon.png")
+    audiologo_off = pygame.image.load("volumeoff.png")
+
     while(1):
         #create window and track mouse
         game_window.fill(menucolor)
@@ -672,13 +678,6 @@ def options_menu(chosen_font, difficulty, color, lightmode, highscore, coop, aud
         if pygame.mixer.music.get_busy == False and audio == True:
             pygame.mixer.music.load("chickendancesong.mp3")
             pygame.mixer.music.play(-1)
-
-        #prep menu sound
-        menu_blip = pygame.mixer.Sound("pokeconfirm.mp3")
-
-        #prep image for vulume button
-        audiologo_on = pygame.image.load("volumeon.png")
-        audiologo_off = pygame.image.load("volumeoff.png")
 
         #create buttons
         difficulty_button_outline = pygame.Rect(window_x / 4 - 10, window_y / 13 - 10, window_x / 2 + 20, window_y / 13 + 20)
@@ -763,7 +762,6 @@ def options_menu(chosen_font, difficulty, color, lightmode, highscore, coop, aud
             game_window.blit(mode_text, (window_x / 4 + 20, 7 * window_y / 13 - 10))
             game_window.blit(coop_text, (window_x / 4 + 20, 9 * window_y / 13 - 10))
             game_window.blit(back_text, (window_x / 4 + 20, 11 * window_y / 13 - 10))
-
         elif chosen_font == "Bahnschrift" or chosen_font == "Calibri":
             game_window.blit(difficulty_text, (window_x / 4 + 20, window_y / 13 + 5))
             game_window.blit(font_text, (window_x / 4 + 20, 3 * window_y / 13 + 5))
@@ -894,7 +892,6 @@ def iterate_rainbow (color):
             else:
                 return rainbow_list[0]
         i += 1
-
 
 #function that generates a new fruit spawn
 def gen_fruit(snake_body, rocks_list):
